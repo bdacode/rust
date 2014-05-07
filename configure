@@ -851,6 +851,8 @@ if [ -z $CFG_DISABLE_MANAGE_SUBMODULES ]
 then
     cd ${CFG_SRC_DIR}
 
+    git reset --hard
+
     msg "git: submodule sync"
     "${CFG_GIT}" submodule sync
 
