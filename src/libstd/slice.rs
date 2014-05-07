@@ -110,7 +110,7 @@ use ops::Drop;
 use option::{None, Option, Some};
 use ptr::RawPtr;
 use ptr;
-use rt::global_heap::{exchange_free};
+use rt::heap::exchange_free;
 use unstable::finally::try_finally;
 use vec::Vec;
 
@@ -805,7 +805,8 @@ impl<T> Drop for MoveItems<T> {
         // destroy the remaining elements
         for _x in *self {}
         unsafe {
-            exchange_free(self.allocation as *u8)
+            // FIXME: #13994 (should pass align and size here)
+            exchange_free(self.allocation, 0, 8)
         }
     }
 }

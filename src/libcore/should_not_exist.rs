@@ -33,7 +33,7 @@ extern {
     fn rust_malloc(size: uint) -> *u8;
     #[cfg(not(stage0))]
     fn rust_malloc(size: uint, align: uint) -> *u8;
-    fn rust_free(ptr: *u8);
+    fn rust_free(ptr: *u8, size: uint, align: uint);
 }
 
 #[cfg(stage0)]
@@ -51,6 +51,7 @@ unsafe fn alloc(cap: uint) -> *mut Vec<()> {
 #[cfg(not(stage0))]
 unsafe fn alloc(cap: uint) -> *mut Vec<()> {
     let cap = cap.checked_add(&mem::size_of::<Vec<()>>()).unwrap();
+    // FIXME: #13994: port to the sized deallocation API when available
     let ret = rust_malloc(cap, 8) as *mut Vec<()>;
     if ret.is_null() {
         intrinsics::abort();
@@ -118,7 +119,8 @@ impl FromIterator<char> for ~str {
                     ptr::copy_nonoverlapping_memory(&mut (*ptr2).data,
                                                     &(*ptr).data,
                                                     len);
-                    rust_free(ptr as *u8);
+                    // FIXME: #13994: port to the sized deallocation API when available
+                    rust_free(ptr as *u8, 0, 8);
                     cast::forget(ret);
                     ret = cast::transmute(ptr2);
                     ptr = ptr2;
@@ -184,7 +186,8 @@ impl<A> FromIterator<A> for ~[A] {
                     ptr::copy_nonoverlapping_memory(&mut (*ptr2).data,
                                                     &(*ptr).data,
                                                     len);
-                    rust_free(ptr as *u8);
+                    // FIXME: #13994: port to the sized deallocation API when available
+                    rust_free(ptr as *u8, 0, 8);
                     cast::forget(ret);
                     ret = cast::transmute(ptr2);
                     ptr = ptr2;
